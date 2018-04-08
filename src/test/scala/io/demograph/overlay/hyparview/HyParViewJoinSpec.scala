@@ -16,6 +16,8 @@
 
 package io.demograph.overlay.hyparview
 
+import io.demograph.overlay.hyparview.HyParViewReactor.Inspect
+
 /**
  *
  */
@@ -24,10 +26,14 @@ class HyParViewJoinSpec extends HyParViewBaseSpec {
   behavior of "Join"
 
   it should "allow inspections" in {
-
+    val state: HyParViewState = (hyparview() ?? Inspect).futureValue
+    state.activeView.size shouldBe 0
+    state.passiveView.size shouldBe 0
+    state.joinChannel should not be (null)
+    state.controlChannel should not be (null)
   }
 
-  it should "be sent to the Contact node upon initialization" in {
+  it should "be sent to the Contact node upon InitiateJoin control message" in {
 
   }
 
