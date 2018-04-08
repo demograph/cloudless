@@ -17,15 +17,17 @@
 package io.demograph.overlay.hyparview
 
 import eu.timepit.refined.auto._
-import io.demograph.overlay.hyparview.HyParViewReactor._
+import io.demograph.overlay.hyparview.HyParView._
 import io.demograph.overlay.hyparview.Messages._
 import io.reactors.protocol._
 import io.reactors.{ Channel, Proto, Reactor }
 
-class HyParViewReactor(
+class HyParView(
   config: HyParViewConfig,
   initActiveView: PartialView[Neighbour],
   initPassiveView: PartialView[PassiveProtocol]) extends Reactor[Server.Req[Inspect.type, HyParViewState]] {
+
+  self =>
 
   private[this] var activeView = initActiveView
   private[this] var passiveView = initPassiveView
@@ -41,17 +43,22 @@ class HyParViewReactor(
 
   controlConnector.events.onEvent {
     case InitiateJoin(bootstrap) =>
-      bootstrap ! Join(selfProtocol)
+      bootstrap ! Join(introduceSelf)
     case InitiateShuffle =>
   }
+
+  def introduceSelf: Neighbour = Neighbour(selfProtocol, ActiveProtocol(
+    self.system.channels.twoWayServer[ShuffleRequest, ShuffleReply].serveTwoWay,
+    system.channels.open[ForwardJoin].channel,
+    system.channels.open[Disconnect.type].channel))
 }
 
-object HyParViewReactor {
+object HyParView {
 
   def apply(config: HyParViewConfig)(
     initActiveView: PartialView[Neighbour] = PartialView.empty(config.maxActiveViewSize),
-    initPassiveView: PartialView[PassiveProtocol] = PartialView.empty(config.maxPassiveViewSize)): Proto[HyParViewReactor] = {
-    Proto[HyParViewReactor](config, initActiveView, initPassiveView)
+    initPassiveView: PartialView[PassiveProtocol] = PartialView.empty(config.maxPassiveViewSize)): Proto[HyParView] = {
+    Proto[HyParView](config, initActiveView, initPassiveView)
   }
 
   private[hyparview] case object Inspect

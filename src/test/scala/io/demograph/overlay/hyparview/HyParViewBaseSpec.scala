@@ -19,10 +19,9 @@ package io.demograph.overlay.hyparview
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.auto._
 import eu.timepit.refined.numeric.NonNegative
-import io.demograph.overlay.hyparview.HyParViewReactor.Inspect
+import io.demograph.overlay.hyparview.Messages.{ Neighbour, PassiveProtocol }
 import io.demograph.overlay.{ ReactorOps, TestSpec }
-import io.reactors.protocol._
-import io.reactors.{ Channel, ReactorSystem }
+import io.reactors.ReactorSystem
 
 import scala.concurrent.duration._
 /**
@@ -32,13 +31,17 @@ trait HyParViewBaseSpec extends TestSpec with ReactorOps {
 
   implicit val system: ReactorSystem = ReactorSystem.default("test")
 
-  def hyparview(config: HyParViewConfig = makeConfig()): Channel[Server.Req[Inspect.type, HyParViewState]] =
-    system.spawn(HyParViewReactor(config)())
+  def filledPassiveView(peers: PassiveProtocol*): PartialView[PassiveProtocol] =
+    PartialView(peers.size, Set(peers: _*))
 
-  //
-  //  def filledPartialView(ars: ActorRef*): PartialView[ActorRef] = PartialView(ars.size, Set(ars: _*))
-  //
-  //  def unboundedPartialView(ars: ActorRef*): PartialView[ActorRef] = PartialView(Int.MaxValue, Set(ars: _*))
+  def filledActiveView(neighbors: Neighbour*): PartialView[Neighbour] =
+    PartialView(neighbors.size, Set(neighbors: _*))
+
+  def unboundedPassiveView(peers: PassiveProtocol*): PartialView[PassiveProtocol] =
+    PartialView(Int.MaxValue, Set(peers: _*))
+
+  def unboundedActiveView(neighbors: Neighbour*): PartialView[Neighbour] =
+    PartialView(Int.MaxValue, Set(neighbors: _*))
   //
   //  // Returns a fixed element when drawing a single random element, and the array of supplied elements when drawing multiple
   //  def predictablePartialView(maxSize: Int, drawFixed: ActorRef, ars: ActorRef*): PartialView[ActorRef] = {

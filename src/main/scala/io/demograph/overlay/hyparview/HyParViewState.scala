@@ -16,7 +16,7 @@
 
 package io.demograph.overlay.hyparview
 
-import io.demograph.overlay.hyparview.HyParViewReactor.ControlMessage
+import io.demograph.overlay.hyparview.HyParView.ControlMessage
 import io.demograph.overlay.hyparview.Messages.{ Neighbour, PassiveProtocol }
 import io.reactors.Channel
 

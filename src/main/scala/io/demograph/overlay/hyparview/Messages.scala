@@ -25,7 +25,8 @@ import io.reactors.protocol._
  */
 object Messages {
 
-  case class Join(peer: PassiveProtocol)
+  // Similar to a priority PromotionRequest, but will be forwarded to the target's active view in addition.
+  case class Join(neighbour: Neighbour)
 
   case class ForwardJoin(peer: PassiveProtocol, timeToLive: Int Refined NonNegative)
 
@@ -36,7 +37,7 @@ object Messages {
 
   sealed trait PromotionReply
   case class PromotionRejected(peer: PassiveProtocol) extends PromotionReply
-  case class PromotionAccepted(peer: ActiveProtocol) extends PromotionReply
+  case class PromotionAccepted(neighbour: Neighbour) extends PromotionReply
 
   case object Disconnect
 
