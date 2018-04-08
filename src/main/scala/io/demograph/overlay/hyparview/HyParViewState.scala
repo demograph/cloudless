@@ -17,11 +17,11 @@
 package io.demograph.overlay.hyparview
 
 import io.demograph.overlay.hyparview.HyParViewReactor.ControlMessage
-import io.demograph.overlay.hyparview.Messages.{ Join, Neighbour, PassiveProtocol }
+import io.demograph.overlay.hyparview.Messages.{ Neighbour, PassiveProtocol }
 import io.reactors.Channel
 
 private[hyparview] case class HyParViewState(
   activeView: PartialView[Neighbour],
   passiveView: PartialView[PassiveProtocol],
-  joinChannel: Channel[Join],
-  controlChannel: Channel[ControlMessage])
+  controlChannel: Channel[ControlMessage],
+  passiveProtocol: PassiveProtocol)

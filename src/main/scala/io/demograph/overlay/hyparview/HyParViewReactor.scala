@@ -17,11 +17,10 @@
 package io.demograph.overlay.hyparview
 
 import eu.timepit.refined.auto._
-
 import io.demograph.overlay.hyparview.HyParViewReactor._
-import io.demograph.overlay.hyparview.Messages.{ Join, Neighbour, PassiveProtocol }
-import io.reactors.{ Channel, Proto, Reactor }
+import io.demograph.overlay.hyparview.Messages._
 import io.reactors.protocol._
+import io.reactors.{ Channel, Proto, Reactor }
 
 class HyParViewReactor(
   config: HyParViewConfig,
@@ -32,9 +31,18 @@ class HyParViewReactor(
   private[this] var passiveView = initPassiveView
   private[this] val controlConnector = system.channels.open[ControlMessage]
   private[this] val joinConnector = system.channels.open[Join]
+  private[this] lazy val promotePeerServer: Server[PromotionRequest, PromotionReply] =
+    system.server[PromotionRequest, PromotionReply]((_, _) => PromotionRejected(selfProtocol))
+  private[this] lazy val selfProtocol: PassiveProtocol = PassiveProtocol(joinConnector.channel, promotePeerServer)
 
   main.events.onEvent {
-    case (Inspect, resp) => resp ! HyParViewState(activeView, passiveView, joinConnector.channel, controlConnector.channel)
+    case (Inspect, resp) => resp ! HyParViewState(activeView, passiveView, controlConnector.channel, selfProtocol)
+  }
+
+  controlConnector.events.onEvent {
+    case InitiateJoin(bootstrap) =>
+      bootstrap ! Join(selfProtocol)
+    case InitiateShuffle =>
   }
 }
 

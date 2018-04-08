@@ -16,7 +16,8 @@
 
 package io.demograph.overlay.hyparview
 
-import io.demograph.overlay.hyparview.HyParViewReactor.Inspect
+import io.demograph.overlay.hyparview.HyParViewReactor.{ InitiateJoin, Inspect }
+import io.demograph.overlay.hyparview.Messages.Join
 
 /**
  *
@@ -29,12 +30,16 @@ class HyParViewJoinSpec extends HyParViewBaseSpec {
     val state: HyParViewState = (hyparview() ?? Inspect).futureValue
     state.activeView.size shouldBe 0
     state.passiveView.size shouldBe 0
-    state.joinChannel should not be (null)
     state.controlChannel should not be (null)
+    state.passiveProtocol.bootstrap should not be (null)
+    state.passiveProtocol.promote should not be (null)
   }
 
   it should "be sent to the Contact node upon InitiateJoin control message" in {
-
+    val state: HyParViewState = (hyparview() ?? Inspect).futureValue
+    val (c, f) = channelProbe[Join]
+    state.controlChannel ! InitiateJoin(c)
+    f.futureValue.peer shouldBe state.passiveProtocol
   }
 
   it should "forward a received join to the active-view, excluding the new-node" in {

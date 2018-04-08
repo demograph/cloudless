@@ -16,9 +16,8 @@
 
 package io.demograph.overlay
 
-import io.reactors.{ Arrayable, IVar }
-import io.reactors._
 import io.reactors.protocol._
+import io.reactors.{ Arrayable, _ }
 import org.scalatest.concurrent.Futures
 
 import scala.concurrent.{ Future, Promise }
@@ -37,8 +36,15 @@ trait ReactorOps extends Futures {
   def channelProbe[S: Arrayable](implicit system: ReactorSystem): (Channel[S], Future[S]) = {
     val p = Promise[S]
     val c: Channel[S] = system.spawnLocal[S] { self =>
-      self.main.events.onEvent(t => p.tryComplete(Success(t)))
-      self.main.events.onExcept { case t => p.tryComplete(Failure(t)) }
+      self.main.events.onEvent { t =>
+        p.tryComplete(Success(t))
+        self.main.seal()
+      }
+      self.main.events.onExcept {
+        case t =>
+          p.tryComplete(Failure(t))
+          self.main.seal()
+      }
     }
     (c, p.future)
   }
