@@ -20,7 +20,7 @@ import eu.timepit.refined.auto._
 import io.demograph.overlay.hyparview.HyParView._
 import io.demograph.overlay.hyparview.Messages._
 import io.reactors.protocol._
-import io.reactors.{ Channel, Proto, Reactor }
+import io.reactors.{ Channel, Proto, Reactor, ReactorSystem }
 
 class HyParView(
   config: HyParViewConfig,
@@ -47,6 +47,12 @@ class HyParView(
     case InitiateShuffle =>
   }
 
+  joinConnector.events.onEvent {
+    case Join(neighbour) =>
+      val forwardJoin = ForwardJoin(neighbour.passive, config.activeRWL)
+      activeView.foreach(_.active.forwardJoinChannel ! forwardJoin)
+  }
+
   def introduceSelf: Neighbour = Neighbour(selfProtocol, ActiveProtocol(
     self.system.channels.twoWayServer[ShuffleRequest, ShuffleReply].serveTwoWay,
     system.channels.open[ForwardJoin].channel,
@@ -56,6 +62,14 @@ class HyParView(
 object HyParView {
 
   def apply(config: HyParViewConfig)(
+    initActiveView: PartialView[Neighbour] = PartialView.empty(config.maxActiveViewSize),
+    initPassiveView: PartialView[PassiveProtocol] = PartialView.empty(config.maxPassiveViewSize))(
+    implicit
+    system: ReactorSystem): Channel[(Inspect.type, Channel[HyParViewState])] = {
+    system.spawn(proto(config)(initActiveView, initPassiveView))
+  }
+
+  def proto(config: HyParViewConfig)(
     initActiveView: PartialView[Neighbour] = PartialView.empty(config.maxActiveViewSize),
     initPassiveView: PartialView[PassiveProtocol] = PartialView.empty(config.maxPassiveViewSize)): Proto[HyParView] = {
     Proto[HyParView](config, initActiveView, initPassiveView)

@@ -16,6 +16,8 @@
 
 package io.demograph.overlay
 
+import akka.actor.ActorSystem
+import akka.testkit.TestProbe
 import io.reactors.protocol._
 import io.reactors.{ Arrayable, _ }
 import org.scalatest.concurrent.Futures
@@ -25,17 +27,19 @@ import scala.util.{ Failure, Success }
 
 trait ReactorOps extends Futures {
 
+  implicit val as: ActorSystem
+
   implicit class ServerExtOps[T, @specialized(Int, Long, Double) S: Arrayable](val server: Server[T, S]) {
-    def ??(t: T)(implicit system: ReactorSystem): Future[S] = {
-      val (c, f) = channelProbe[S]
+    def ??(t: T)(implicit rs: ReactorSystem): Future[S] = {
+      val (c, f) = channelHead[S]
       server ! ((t, c))
       f
     }
   }
 
-  def channelProbe[S: Arrayable](implicit system: ReactorSystem): (Channel[S], Future[S]) = {
+  def channelHead[S: Arrayable](implicit rs: ReactorSystem): (Channel[S], Future[S]) = {
     val p = Promise[S]
-    val c: Channel[S] = system.spawnLocal[S] { self =>
+    val c: Channel[S] = rs.spawnLocal[S] { self =>
       self.main.events.onEvent { t =>
         p.tryComplete(Success(t))
         self.main.seal()
@@ -47,5 +51,20 @@ trait ReactorOps extends Futures {
       }
     }
     (c, p.future)
+  }
+
+  def channelProbe[S: Arrayable](implicit rs: ReactorSystem): (Channel[S], TestProbe) = {
+    val probe = TestProbe()
+    val c: Channel[S] = rs.spawnLocal[S] { self =>
+      self.main.events.onEvent { t =>
+        probe.ref ! t
+      }
+      self.main.events.onExcept {
+        case t =>
+          probe.ref ! t
+          self.main.seal()
+      }
+    }
+    (c, probe)
   }
 }

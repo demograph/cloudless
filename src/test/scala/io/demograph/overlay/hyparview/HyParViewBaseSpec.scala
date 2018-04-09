@@ -16,20 +16,23 @@
 
 package io.demograph.overlay.hyparview
 
+import akka.actor.ActorSystem
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.auto._
 import eu.timepit.refined.numeric.NonNegative
+import io.demograph.overlay.hyparview.HyParView.Inspect
 import io.demograph.overlay.hyparview.Messages.{ Neighbour, PassiveProtocol }
-import io.demograph.overlay.{ ReactorOps, TestSpec }
-import io.reactors.ReactorSystem
+import io.demograph.overlay.{ ReactorSpec, TestSpec }
+import io.reactors.{ Channel, ReactorSystem }
 
 import scala.concurrent.duration._
 /**
  *
  */
-trait HyParViewBaseSpec extends TestSpec with ReactorOps {
+trait HyParViewBaseSpec extends TestSpec with ReactorSpec {
 
-  implicit val system: ReactorSystem = ReactorSystem.default("test")
+  override implicit val as: ActorSystem = ActorSystem("test")
+  implicit val rs: ReactorSystem = ReactorSystem.default("test")
 
   def filledPassiveView(peers: PassiveProtocol*): PartialView[PassiveProtocol] =
     PartialView(peers.size, Set(peers: _*))
@@ -65,11 +68,6 @@ trait HyParViewBaseSpec extends TestSpec with ReactorOps {
     HyParViewConfig(maxActiveViewSize, maxPassiveViewSize, activeRWL, passiveRWL, shuffleRWL, shuffleActive, shufflePassive, shuffleInterval)
   }
 
-  //  def passiveView(actor: ActorRef): PartialView[ActorRef] = inspectState(actor)._2
-  //
-  //  def activeView(actor: ActorRef): PartialView[ActorRef] = inspectState(actor)._1
-  //
-  //  def inspectState(actor: ActorRef): (PartialView[ActorRef], PartialView[ActorRef]) =
-  //    (actor ? Inspect).mapTo[(PartialView[ActorRef], PartialView[ActorRef])].futureValue
-
+  def inspectState(hyparview: Channel[(HyParView.Inspect.type, Channel[HyParViewState])]): HyParViewState =
+    (hyparview ?? Inspect).futureValue
 }

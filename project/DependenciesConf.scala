@@ -36,10 +36,12 @@ object DependenciesConf {
   val akkaVersion = "2.5.11"
   val akkaHttpVersion = "10.1.1"
 
+  lazy val akkaTestKit = "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test
+
   lazy val akkaActor: Seq[ModuleID] = Seq(
     "com.typesafe.akka" %% "akka-actor" % akkaVersion,
     "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
-    "com.typesafe.akka" %% "akka-testkit" % akkaVersion
+    akkaTestKit
   )
 
   lazy val akkaStreams: Seq[ModuleID] = Seq(
