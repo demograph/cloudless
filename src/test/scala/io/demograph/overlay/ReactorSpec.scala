@@ -26,6 +26,7 @@ trait ReactorSpec extends ReactorOps {
 
   implicit val rs: ReactorSystem
 
+  // @deprecated: Replace with Zero
   def ignoreChannel[S: Arrayable]: Channel[S] = rs.spawnLocal[S] { _.main.seal() }
 
   def passiveProtocol(

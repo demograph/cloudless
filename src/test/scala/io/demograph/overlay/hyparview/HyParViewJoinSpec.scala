@@ -51,8 +51,8 @@ class HyParViewJoinSpec extends HyParViewBaseSpec {
     val n1 = neighbour(forwardJoinChannel = fjoinC1)
     val (fjoinC2, p2) = channelProbe[ForwardJoin]
     val n2 = neighbour(forwardJoinChannel = fjoinC2)
-    val (joinSelf, probeSelf) = channelProbe[Join]
-    val self = neighbour(joinSelf)
+    val (joinSelf, probeSelf) = channelProbe[ForwardJoin]
+    val self = neighbour(forwardJoinChannel = joinSelf)
 
     val state: HyParViewState = inspectState(HyParView(makeConfig())(PartialView(3, Set(n1, n2))))
 
@@ -63,15 +63,11 @@ class HyParViewJoinSpec extends HyParViewBaseSpec {
     probeSelf.expectNoMessage()
   }
 
-  it should "make room for a joined node even if no room is left" in {
+  it should "setup Neighborship with the joining node once JoinForward TTL hits zero" in {
 
   }
 
-  it should "add a node of a join-forward to the active view once TTL hits zero" in {
-
-  }
-
-  it should "add a node of a join-forward to the active view if it is empty" in {
+  it should "setup Neighborship with the joining node when the ForwardJoin receiver has an empty active view" in {
 
   }
 
@@ -79,4 +75,7 @@ class HyParViewJoinSpec extends HyParViewBaseSpec {
 
   }
 
+  it should "make room for a joined node even if no room is left" in {
+
+  }
 }
