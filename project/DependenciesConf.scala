@@ -13,7 +13,7 @@ object DependenciesConf {
   )
 
   lazy val common: Seq[Setting[_]] = scala ++ Seq(
-    libraryDependencies ++= Seq(logback, log4s, pureconfig, scalatest, scalacheck),
+    libraryDependencies ++= Seq(logback, log4s, pureconfig, scalatest, scalacheck, scalaJava8Compat),
     libraryDependencies ++= cats
   )
 
@@ -30,7 +30,7 @@ object DependenciesConf {
   lazy val log4s = "org.log4s" %% "log4s" % "1.6.1"
   lazy val nscalaTime = "com.github.nscala-time" %% "nscala-time" % "2.18.0"
   lazy val scalaz = "org.scalaz" %% "scalaz-core" % "7.2.18"
-
+  lazy val scalaJava8Compat = "org.scala-lang.modules" %% "scala-java8-compat" % "0.8.0"
 
   /* === Typesafe / Lightbend dependencies === */
   val akkaVersion = "2.5.11"
@@ -103,11 +103,32 @@ object DependenciesConf {
     )
   }
 
+  lazy val projectReactor = Seq(
+//    "io.projectreactor" % "reactor-core" % "3.1.4.RELEASE",
+    "io.projectreactor" %% "reactor-scala-extensions" % "0.3.4"
+//    "io.projectreactor.ipc" % "reactor-netty" % "0.7.6.RELEASE"
+//    "io.projectreactor.ipc" % "reactor-aeron" % "0.7.0.BUILD-SNAPSHOT"
+  )
+
   lazy val pureconfig = "com.github.pureconfig" %% "pureconfig" % "0.9.1"
+
+  lazy val reactiveSocket = Seq(
+    resolvers += Resolver.url("jfrog", new URL("https://oss.jfrog.org/libs-release")),
+    libraryDependencies ++= Seq(
+      "io.rsocket" % "rsocket-transport-aeron" % "0.9.20",
+      "io.rsocket" % "rsocket-transport-netty" % "0.9.20"
+  ))
+
 
   lazy val reactor = "io.reactors" %% "reactors" % "0.8"
 
   lazy val refined = "eu.timepit" %% "refined" % "0.8.7"
+
+  lazy val scalaPB = Seq(
+    "io.grpc" % "grpc-netty" % scalapb.compiler.Version.grpcJavaVersion,
+    "com.thesamet.scalapb" %% "compilerplugin" % scalapb.compiler.Version.scalapbVersion,
+    "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
+  )
 
   lazy val shapeless = "com.chuusai" %% "shapeless" % "2.3.3"
 

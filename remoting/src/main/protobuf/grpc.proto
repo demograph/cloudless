@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package io.demograph.remoting;
+
+service Grpc {
+    rpc FireAndForget (Payload) returns (Empty) {}
+    rpc RequestReply (Payload) returns (Payload) {}
+    // rpc RequestStream (Payload) returns (stream Payload) {}
+    rpc Bidirectional (stream Payload) returns (stream Payload) {}
+}
+
+message Empty {}
+
+message Payload {
+    int32   channelId = 1;
+    // Probably not required as it may be obtained from the `channelId`, but reserved just in case
+    // int32   messageType = 2;
+    bytes   data = 3;
+}

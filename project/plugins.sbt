@@ -6,4 +6,6 @@ addSbtPlugin("org.scalariform"      % "sbt-scalariform"         % "1.8.2")
 
 addSbtPlugin("org.scalastyle"       %% "scalastyle-sbt-plugin"  % "1.0.0")
 
+addSbtPlugin("com.thesamet" % "sbt-protoc" % "0.99.18")
+
 addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.0" cross CrossVersion.full)
